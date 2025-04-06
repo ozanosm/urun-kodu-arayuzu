@@ -6,6 +6,10 @@ import os
 # Sayfa yapılandırması
 st.set_page_config(page_title="Ürün Kodu Arama", layout="wide")
 
+# Görseller
+st.image("logo.png", width=300)
+st.image("bauma.png", width=700)
+
 # Başlık
 st.title("🔍 Ürün Kodu Arama Arayüzü")
 
@@ -27,10 +31,10 @@ else:
 if "giris" not in st.session_state:
     st.stop()
 
-# Veri Yükleme (ilk satır veri olduğu için header=None veriyoruz)
+# Veri Yükleme (ilk satır başlık değil, ; ile ayrılmış)
 file_path = "veri.csv"
 try:
-    data = pd.read_csv(file_path, on_bad_lines='skip', header=None)
+    data = pd.read_csv(file_path, on_bad_lines='skip', header=None, delimiter=';')
     data.columns = ["Tempo Kod", "Referans Kod 1", "Referans Kod 2"]
 except Exception as e:
     st.error(f"Veri yüklenemedi: {e}")
