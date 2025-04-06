@@ -6,8 +6,19 @@ import os
 # Sayfa yapılandırması
 st.set_page_config(page_title="Ürün Kodu Arama", layout="wide")
 
-# Dil seçimi
-language = st.sidebar.selectbox("🌐 Dil / Language", ["Türkçe", "English"])
+# Üst köşeye TR/EN butonları yerleştir
+col1, col2, col3 = st.columns([8, 1, 1])
+with col2:
+    if st.button("🇹🇷 TR"):
+        st.session_state["lang"] = "Türkçe"
+with col3:
+    if st.button("🇬🇧 EN"):
+        st.session_state["lang"] = "English"
+
+if "lang" not in st.session_state:
+    st.session_state["lang"] = "Türkçe"
+
+language = st.session_state["lang"]
 
 # Çok dilli metin sözlüğü
 def t(key):
