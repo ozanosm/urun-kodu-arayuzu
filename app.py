@@ -53,18 +53,22 @@ if query:
     partial_matches = []
 
     for _, row in data.iterrows():
+        matched = False
         for col in data.columns:
             norm_col = normalize(str(row[col]))
-
-            # DEBUG: Eşleşme kontrolü ve detaylarını yazdır
-            st.write("Query:", norm_query, "| Column:", col, "| Value:", norm_col, "| Match:", is_sequential_match(norm_query, norm_col))
+            match_result = is_sequential_match(norm_query, norm_col)
+            st.write("Query:", norm_query, "| Column:", col, "| Value:", norm_col, "| Match:", match_result)
 
             if norm_col == norm_query:
                 exact_matches.append(row)
+                matched = True
                 break
-            elif norm_col and is_sequential_match(norm_query, norm_col):
+            elif norm_col and match_result:
                 partial_matches.append(row)
+                matched = True
                 break
+        if matched:
+            continue
 
     if exact_matches:
         st.success(f"{len(exact_matches)} tam eşleşme bulundu.")
