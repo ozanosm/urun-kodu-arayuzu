@@ -27,10 +27,11 @@ else:
 if "giris" not in st.session_state:
     st.stop()
 
-# Veri Yükleme
+# Veri Yükleme (ilk satır veri olduğu için header=None veriyoruz)
 file_path = "veri.csv"
 try:
-    data = pd.read_csv(file_path, on_bad_lines='skip')
+    data = pd.read_csv(file_path, on_bad_lines='skip', header=None)
+    data.columns = ["Tempo Kod", "Referans Kod 1", "Referans Kod 2"]
 except Exception as e:
     st.error(f"Veri yüklenemedi: {e}")
     st.stop()
