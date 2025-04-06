@@ -7,20 +7,6 @@ import time
 # Sayfa yapılandırması
 st.set_page_config(page_title="Ürün Kodu Arama", layout="wide")
 
-# Tema seçimi
-if "tema" not in st.session_state:
-    st.session_state["tema"] = "light"
-
-if st.sidebar.checkbox("🌗 Koyu Tema", value=(st.session_state["tema"] == "dark")):
-    st.session_state["tema"] = "dark"
-    st.markdown("""
-        <style>
-        body { background-color: #0e1117; color: #fafafa; }
-        </style>
-    """, unsafe_allow_html=True)
-else:
-    st.session_state["tema"] = "light"
-
 # Dil seçimi (sidebar üzerinden)
 language = st.sidebar.radio("🌐 Dil / Language", ["Türkçe", "English"])
 st.session_state["lang"] = language
@@ -42,8 +28,31 @@ def t(key):
         "search_placeholder": {"Türkçe": "Aramak için bir kod girin.", "English": "Enter a code to search."},
         "recent_searches": {"Türkçe": "🕘 Son Aramalar", "English": "🕘 Recent Searches"},
         "about_link": {"Türkçe": "[TEMPO FİLTRE Resmî Web Sitesi](https://www.tempofiltre.com)", "English": "[Visit TEMPO FILTER Website](https://www.tempofiltre.com)"},
+        "dark_mode": {"Türkçe": "🌗 Koyu Tema", "English": "🌗 Dark Mode"},
     }
     return dictionary.get(key, {}).get(language, key)
+
+# Tema seçimi sidebar en alt
+if "tema" not in st.session_state:
+    st.session_state["tema"] = "light"
+
+with st.sidebar:
+    st.markdown("---")
+    dark_toggle = st.checkbox(t("dark_mode"), value=(st.session_state["tema"] == "dark"))
+    if dark_toggle:
+        st.session_state["tema"] = "dark"
+        st.markdown("""
+            <style>
+            body { background-color: #0e1117; color: #fafafa; font-family: 'Segoe UI', sans-serif; }
+            </style>
+        """, unsafe_allow_html=True)
+    else:
+        st.session_state["tema"] = "light"
+        st.markdown("""
+            <style>
+            body { font-family: 'Segoe UI', sans-serif; }
+            </style>
+        """, unsafe_allow_html=True)
 
 # Sidebar içerikleri
 st.sidebar.markdown("---")
@@ -52,8 +61,7 @@ st.sidebar.video("https://www.youtube.com/watch?v=I2NFMYQy54k")
 
 # Görseller üstte
 st.image("https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/image.png", width=300)
-# Bu satırı kaldır ve URL üzerinden yükle:
-st.image("https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/hidrolik-filtre.jpg", use_container_width=True)
+st.image("https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/hidrolik-filtre.jpg", width=600)
 
 # Başlık
 st.title(t("title"))
@@ -69,7 +77,6 @@ if "giris" not in st.session_state:
         if st.button(t("login_button")):
             if username == auth_user and password == auth_pass:
                 st.session_state["giris"] = True
-                st.success(t("login_success"))
                 st.experimental_rerun()
             else:
                 st.error(t("login_failed"))
