@@ -56,11 +56,12 @@ if query:
         for col in data.columns:
             norm_col = normalize(str(row[col]))
 
+            # DEBUG: Eşleşme kontrolü ve detaylarını yazdır
+            st.write("Query:", norm_query, "| Column:", col, "| Value:", norm_col, "| Match:", is_sequential_match(norm_query, norm_col))
+
             if norm_col == norm_query:
                 exact_matches.append(row)
                 break
-                st.write("Query:", norm_query, "| Cell:", norm_col, "| Match:", is_sequential_match(norm_query, norm_col))
-
             elif is_sequential_match(norm_query, norm_col):
                 partial_matches.append(row)
                 break
