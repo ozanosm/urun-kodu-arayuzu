@@ -31,13 +31,14 @@ except Exception as e:
     st.error(f"Veri yüklenemedi: {e}")
     st.stop()
 
-# Normalize fonksiyonu (büyük/küçük harf, boşluk, sembol fark etmez)
+# Güvenli normalize fonksiyonu
 def normalize(text):
-    if pd.isna(text):
+    try:
+        return re.sub(r'[^a-zA-Z0-9]', '', str(text)).lower()
+    except Exception:
         return ""
-    return re.sub(r'[^a-zA-Z0-9]', '', str(text)).lower()
 
-# Sıralı karakter eşleşmesi kontrolü (örn. nth2049 → nth20495)
+# Sıralı karakter eşleşmesi kontrolü
 def is_sequential_match(query, text):
     index = 0
     for char in query:
@@ -59,10 +60,13 @@ if query:
     for _, row in data.iterrows():
         row_match = False
         for col in data.columns:
-            norm_col = normalize(row[col])
+            raw_cell = row[col]
+            if pd.isna(raw_cell):
+                continue
+            norm_col = normalize(raw_cell)
             if is_sequential_match(norm_query, norm_col):
                 row_match = True
-                break  # Bir sütun eşleşiyorsa, satır sonuçlara girer
+                break
 
         if row_match:
             results.append(row)
