@@ -120,4 +120,4 @@ else:
 
 # Sayfa altına bauma görseli
 st.markdown("---")
-st.image("https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/bauma.png", use_column_width=True)
+st.image("https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/bauma.png", use_container_width=True)
