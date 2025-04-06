@@ -17,14 +17,13 @@ if "giris" not in st.session_state:
         if st.button("Giriş Yap"):
             if username == "admin" and password == "12345":
                 st.session_state["giris"] = True
-                st.success("Giriş başarılı. Sayfa yeniden yükleniyor...")
+                st.success("Giriş başarılı. Sayfa yeniden yüklenemeyecek, lütfen sayfayı manuel yenileyin.")
                 st.stop()
             else:
                 st.error("Kullanıcı adı veya şifre yanlış.")
 else:
     st.info("🔓 Giriş başarılı")
 
-# Giriş yapılmadıysa durdur
 if "giris" not in st.session_state:
     st.stop()
 
@@ -63,17 +62,17 @@ if query:
     results = []
 
     for _, row in data.iterrows():
-        row_match = False
+        matched = False
         for col in data.columns:
-            raw_cell = row[col]
-            if pd.isna(raw_cell):
+            cell_value = row[col]
+            if pd.isna(cell_value):
                 continue
-            norm_col = normalize(raw_cell)
+            norm_col = normalize(cell_value)
             if is_sequential_match(norm_query, norm_col):
-                row_match = True
+                matched = True
                 break
 
-        if row_match:
+        if matched:
             results.append(row)
 
     if results:
