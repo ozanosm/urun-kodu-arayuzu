@@ -3,37 +3,41 @@ import pandas as pd
 import re
 import os
 
-# Giriş kontrolü
-def login():
-    st.title("Ürün Kodu Arama Arayüzü - Giriş")
-    username = st.text_input("Kullanıcı adı")
-    password = st.text_input("Şifre", type="password")
-    if username == "admin" and password == "12345":
-        return True
-    else:
-        st.warning("Kullanıcı adı veya şifre yanlış.")
-        return False
+# Sayfa yapılandırması
+st.set_page_config(page_title="Ürün Kodu Arama", layout="wide")
 
-if not login():
+# Başlık
+st.title("🔍 Ürün Kodu Arama Arayüzü")
+
+# Şifreli Giriş
+with st.expander("🔐 Giriş" if "giris" not in st.session_state else "🔓 Giriş başarılı", expanded="giris" not in st.session_state):
+    username = st.text_input("Kullanıcı Adı", key="username")
+    password = st.text_input("Şifre", type="password", key="password")
+    if st.button("Giriş Yap"):
+        if username == "admin" and password == "12345":
+            st.session_state["giris"] = True
+            st.experimental_rerun()
+        else:
+            st.error("Kullanıcı adı veya şifre yanlış.")
+
+if "giris" not in st.session_state:
     st.stop()
 
-# Veri yükleme
+# Veri Yükleme
 file_path = "veri.csv"
 try:
-    data = pd.read_csv(file_path, on_bad_lines='skip')  # Bozuk satırları atla
-    st.success("Veri başarıyla yüklendi.")
-    st.write("Veri önizleme:")
-    st.dataframe(data.head())
+    data = pd.read_csv(file_path, on_bad_lines='skip')
 except Exception as e:
     st.error(f"Veri yüklenemedi: {e}")
     st.stop()
 
-# Normalize ve eşleşme fonksiyonları
+# Normalize fonksiyonu (büyük/küçük harf, boşluk, sembol fark etmez)
 def normalize(text):
     if pd.isna(text):
         return ""
-    return re.sub(r'[^a-zA-Z0-9]', '', text).lower()
+    return re.sub(r'[^a-zA-Z0-9]', '', str(text)).lower()
 
+# Sıralı karakter eşleşmesi kontrolü (örn. nth2049 → nth20495)
 def is_sequential_match(query, text):
     index = 0
     for char in query:
@@ -43,40 +47,30 @@ def is_sequential_match(query, text):
         index += 1
     return True
 
-# Arama
-st.title("Ürün Kodu Arama")
-query = st.text_input("Kod girin (Tempo, Ref1, Ref2):")
+# Arama Kutusu
+st.markdown("---")
+st.subheader("🔎 Kodla Arama")
+query = st.text_input("Bir ürün kodu girin (Tempo, Ref1, Ref2):")
 
 if query:
     norm_query = normalize(query)
-    exact_matches = []
-    partial_matches = []
+    results = []
 
     for _, row in data.iterrows():
-        matched = False
+        row_match = False
         for col in data.columns:
-            norm_col = normalize(str(row[col]))
-            match_result = is_sequential_match(norm_query, norm_col)
-            st.write("Query:", norm_query, "| Column:", col, "| Value:", norm_col, "| Match:", match_result)
+            norm_col = normalize(row[col])
+            if is_sequential_match(norm_query, norm_col):
+                row_match = True
+                break  # Bir sütun eşleşiyorsa, satır sonuçlara girer
 
-            if norm_col == norm_query:
-                exact_matches.append(row)
-                matched = True
-                break
-            elif norm_col and match_result:
-                partial_matches.append(row)
-                matched = True
-                break
-        if matched:
-            continue
+        if row_match:
+            results.append(row)
 
-    if exact_matches:
-        st.success(f"{len(exact_matches)} tam eşleşme bulundu.")
-        st.dataframe(pd.DataFrame(exact_matches))
-    elif partial_matches:
-        st.info(f"{len(partial_matches)} sıralı eşleşme bulundu.")
-        st.dataframe(pd.DataFrame(partial_matches))
+    if results:
+        st.success(f"{len(results)} eşleşme bulundu.")
+        st.dataframe(pd.DataFrame(results))
     else:
         st.warning("Eşleşme bulunamadı.")
 else:
-    st.info("Arama yapmak için kod girin.")
+    st.info("Aramak için bir kod girin.")
