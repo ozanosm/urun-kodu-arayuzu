@@ -10,16 +10,21 @@ st.set_page_config(page_title="Ürün Kodu Arama", layout="wide")
 st.title("🔍 Ürün Kodu Arama Arayüzü")
 
 # Şifreli Giriş
-with st.expander("🔐 Giriş" if "giris" not in st.session_state else "🔓 Giriş başarılı", expanded="giris" not in st.session_state):
-    username = st.text_input("Kullanıcı Adı", key="username")
-    password = st.text_input("Şifre", type="password", key="password")
-    if st.button("Giriş Yap"):
-        if username == "admin" and password == "12345":
-            st.session_state["giris"] = True
-            st.experimental_rerun()
-        else:
-            st.error("Kullanıcı adı veya şifre yanlış.")
+if "giris" not in st.session_state:
+    with st.expander("🔐 Giriş", expanded=True):
+        username = st.text_input("Kullanıcı Adı")
+        password = st.text_input("Şifre", type="password")
+        if st.button("Giriş Yap"):
+            if username == "admin" and password == "12345":
+                st.session_state["giris"] = True
+                st.success("Giriş başarılı. Sayfa yeniden yükleniyor...")
+                st.stop()
+            else:
+                st.error("Kullanıcı adı veya şifre yanlış.")
+else:
+    st.info("🔓 Giriş başarılı")
 
+# Giriş yapılmadıysa durdur
 if "giris" not in st.session_state:
     st.stop()
 
