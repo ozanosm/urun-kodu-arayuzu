@@ -1,3 +1,6 @@
+import pandas as pd
+
+data = pd.read_csv("veri.csv")  # Repo ile aynı klasörde olmalı
 import streamlit as st
 
 def login():
