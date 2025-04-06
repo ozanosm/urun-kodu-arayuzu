@@ -19,11 +19,13 @@ if not login():
 
 # Veri yükleme
 file_path = "veri.csv"
-if os.path.exists(file_path):
-    data = pd.read_csv(file_path)
+try:
+    data = pd.read_csv(file_path, on_bad_lines='skip')  # Bozuk satırları atla
     st.success("Veri başarıyla yüklendi.")
-else:
-    st.error(f"Dosya bulunamadı: {file_path}")
+    st.write("Veri önizleme:")
+    st.dataframe(data.head())
+except Exception as e:
+    st.error(f"Veri yüklenemedi: {e}")
     st.stop()
 
 # Normalize ve eşleşme fonksiyonları
