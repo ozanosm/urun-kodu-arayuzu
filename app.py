@@ -5,7 +5,7 @@ def login():
     username = st.text_input("Kullanıcı adı")
     password = st.text_input("Şifre", type="password")
     
-    if username == "admin" and password == "12345":
+    if username == "tempo" and password == "ozanosmanagaoglu":
         return True
     else:
         st.warning("Kullanıcı adı veya şifre yanlış.")
