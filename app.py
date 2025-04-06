@@ -7,7 +7,27 @@ from datetime import datetime
 
 st.set_page_config(page_title="Ürün Kodu Arama", layout="wide")
 
-# Dil ve Tema Seçimi (üst sağ köşe)
+# Stil: daha az scroll için sıkıştırılmış yapı
+st.markdown("""
+    <style>
+    section.main > div { padding-top: 10px; padding-bottom: 10px; }
+    .block-container { padding-top: 1rem; padding-bottom: 0.5rem; }
+    h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+    .stTextInput > div > div > input { height: 3rem; font-size: 1.1rem; }
+    .stButton button { padding: 0.5rem 1.5rem; font-size: 1rem; }
+    </style>
+""", unsafe_allow_html=True)
+
+# Üst logo ve başlık
+st.markdown("""
+    <div style='display: flex; align-items: center; gap: 1rem;'>
+        <img src='https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/image.png' width='160'>
+        <h1 style='margin: 0;'>🔍 Ürün Kodu Arama Arayüzü</h1>
+    </div>
+    <hr style='margin-top: 0.5rem; margin-bottom: 1rem;'>
+""", unsafe_allow_html=True)
+
+# Sidebar ayarlar
 st.sidebar.header("⚙️ Ayarlar")
 language = st.sidebar.radio("🌐 Dil / Language", ["Türkçe", "English"])
 st.session_state["lang"] = language
@@ -28,19 +48,14 @@ def t(key):
         "search_placeholder": {"Türkçe": "Aramak için bir kod girin.", "English": "Enter a code to search."},
         "recent_searches": {"Türkçe": "🕘 Son Aramalar", "English": "🕘 Recent Searches"},
         "about_link": {"Türkçe": "[TEMPO FİLTRE Resmî Web Sitesi](https://www.tempofiltre.com)", "English": "[Visit TEMPO FILTER Website](https://www.tempofiltre.com)"},
-        "dark_mode": {"Türkçe": "🌗 Koyu Tema", "English": "🌗 Dark Mode"},
-        "analytics": {"Türkçe": "📈 İçgörü ve Raporlama", "English": "📈 Insights and Reporting"},
-        "top_queries": {"Türkçe": "En Çok Aranan Kodlar", "English": "Most Searched Codes"},
-        "search_volume": {"Türkçe": "Arama Hacmi (Günlük)", "English": "Search Volume (Daily)"},
-        "search_volume_weekly": {"Türkçe": "Arama Hacmi (Haftalık)", "English": "Search Volume (Weekly)"},
-        "search_by_hour": {"Türkçe": "Saatlik Arama Dağılımı", "English": "Hourly Search Distribution"},
-        "download_logs": {"Türkçe": "📥 Arama Kayıtlarını İndir", "English": "📥 Download Search Logs"}
+        "dark_mode": {"Türkçe": "🌗 Koyu Tema", "English": "🌗 Dark Mode"}
     }
     return dictionary.get(key, {}).get(language, key)
 
+# Tema ayarı (en alt)
+st.sidebar.markdown("---")
 if "tema" not in st.session_state:
     st.session_state["tema"] = "light"
-
 if st.sidebar.checkbox(t("dark_mode"), value=(st.session_state["tema"] == "dark")):
     st.session_state["tema"] = "dark"
     st.markdown("""
@@ -56,30 +71,22 @@ else:
         </style>
     """, unsafe_allow_html=True)
 
-# Sayfa üst logo ve başlık (logo sola yaslı)
-st.markdown("""
-    <div style='display: flex; align-items: center;'>
-        <img src='https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/image.png' width='200' style='margin-right: 20px;'>
-        <h1 style='margin: 0;'>🔍 Ürün Kodu Arama Arayüzü</h1>
-    </div>
-""", unsafe_allow_html=True)
-
-# Şifreli Giriş
+# Şifreli giriş kontrolü
 auth_user = st.secrets["auth"]["username"]
 auth_pass = st.secrets["auth"]["password"]
 
 if "giris" not in st.session_state:
-    with st.expander(t("login_title"), expanded=True):
-        username = st.text_input(t("username"))
-        password = st.text_input(t("password"), type="password")
-        if st.button(t("login_button")):
-            if username == auth_user and password == auth_pass:
-                st.session_state["giris"] = True
-                st.success(t("login_success"))
-                st.stop()
-            else:
-                st.error(t("login_failed"))
+    username = st.text_input(t("username"))
+    password = st.text_input(t("password"), type="password")
+    if st.button(t("login_button")):
+        if username == auth_user and password == auth_pass:
+            st.session_state["giris"] = True
+            st.success(t("login_success"))
+            st.stop()
+        else:
+            st.error(t("login_failed"))
     st.image("https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/bauma.png", use_container_width=True)
     st.stop()
 
-# (Kodun geri kalanı değişmeden devam eder)
+# Giriş başarılıysa burada uygulama devam eder...
+# Buradan sonrası arama kutusu, sonuç gösterimi ve loglama gibi bileşenlerle tamamlanır.
