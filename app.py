@@ -5,14 +5,13 @@ import os
 import time
 from datetime import datetime
 
-# Sayfa yapılandırması
 st.set_page_config(page_title="Ürün Kodu Arama", layout="wide")
 
-# Dil seçimi (sidebar üzerinden)
+# Dil ve Tema Seçimi (üst sağ köşe)
+st.sidebar.header("⚙️ Ayarlar")
 language = st.sidebar.radio("🌐 Dil / Language", ["Türkçe", "English"])
 st.session_state["lang"] = language
 
-# Çok dilli metin sözlüğü
 def t(key):
     dictionary = {
         "title": {"Türkçe": "🔍 Ürün Kodu Arama Arayüzü", "English": "🔍 Product Code Search Interface"},
@@ -39,65 +38,35 @@ def t(key):
     }
     return dictionary.get(key, {}).get(language, key)
 
-# Tema seçimi
 if "tema" not in st.session_state:
     st.session_state["tema"] = "light"
 
-with st.sidebar:
-    st.markdown("---")
-    dark_toggle = st.checkbox(t("dark_mode"), value=(st.session_state["tema"] == "dark"))
-    if dark_toggle:
-        st.session_state["tema"] = "dark"
-        st.markdown("""
-            <style>
-            body { background-color: #0e1117; color: #fafafa; font-family: 'Segoe UI', sans-serif; }
-            </style>
-        """, unsafe_allow_html=True)
-    else:
-        st.session_state["tema"] = "light"
-        st.markdown("""
-            <style>
-            body { font-family: 'Segoe UI', sans-serif; }
-            </style>
-        """, unsafe_allow_html=True)
+if st.sidebar.checkbox(t("dark_mode"), value=(st.session_state["tema"] == "dark")):
+    st.session_state["tema"] = "dark"
+    st.markdown("""
+        <style>
+        body { background-color: #0e1117; color: #fafafa; font-family: 'Segoe UI', sans-serif; }
+        </style>
+    """, unsafe_allow_html=True)
+else:
+    st.session_state["tema"] = "light"
+    st.markdown("""
+        <style>
+        body { font-family: 'Segoe UI', sans-serif; }
+        </style>
+    """, unsafe_allow_html=True)
 
-# Sidebar içerikleri
+# Sidebar ek içerik
 st.sidebar.markdown("---")
 st.sidebar.markdown(t("about_link"))
 st.sidebar.video("https://www.youtube.com/watch?v=I2NFMYQy54k")
 
-# 📊 İçgörü ve Raporlama Paneli
-if st.sidebar.button(t("analytics")):
-    st.subheader(t("top_queries"))
-    if os.path.exists("arama_log.csv"):
-        logs = pd.read_csv("arama_log.csv", names=["timestamp", "query", "matches"])
-        logs["timestamp"] = pd.to_datetime(logs["timestamp"])
-
-        top_queries = logs["query"].value_counts().head(10)
-        st.bar_chart(top_queries)
-
-        st.subheader(t("search_volume"))
-        logs["date"] = logs["timestamp"].dt.date
-        volume_daily = logs.groupby("date").size()
-        st.line_chart(volume_daily)
-
-        st.subheader(t("search_volume_weekly"))
-        logs["week"] = logs["timestamp"].dt.to_period("W").astype(str)
-        volume_weekly = logs.groupby("week").size()
-        st.line_chart(volume_weekly)
-
-        st.subheader(t("search_by_hour"))
-        logs["hour"] = logs["timestamp"].dt.hour
-        volume_hour = logs.groupby("hour").size()
-        st.bar_chart(volume_hour)
-
-        st.download_button(t("download_logs"), data=logs.to_csv(index=False).encode("utf-8"), file_name="arama_log.csv")
-    else:
-        st.info("Henüz arama kaydı yok.")
-    st.stop()
-
-# Başlık
-st.title(t("title"))
+# Sayfa üst görsel ve başlık
+with st.container():
+    col1, col2, col3 = st.columns([1, 2, 1])
+    with col2:
+        st.image("https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/image.png", width=300)
+        st.title(t("title"))
 
 # Şifreli Giriş
 auth_user = st.secrets["auth"]["username"]
@@ -113,12 +82,35 @@ if "giris" not in st.session_state:
                 st.experimental_rerun()
             else:
                 st.error(t("login_failed"))
-    st.image("https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/image.png", width=300)
-    st.image("https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/bauma.png", use_container_width=True)
+    with st.container():
+        st.image("https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/bauma.png", use_container_width=True)
     st.stop()
 
-st.image("https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/image.png", width=300)
-show_hidrolik = st.empty()
+# 📈 İçgörü ve Raporlama Paneli
+if st.sidebar.button(t("analytics")):
+    st.subheader(t("top_queries"))
+    if os.path.exists("arama_log.csv"):
+        logs = pd.read_csv("arama_log.csv", names=["timestamp", "query", "matches"])
+        logs["timestamp"] = pd.to_datetime(logs["timestamp"])
+
+        st.bar_chart(logs["query"].value_counts().head(10))
+
+        st.subheader(t("search_volume"))
+        logs["date"] = logs["timestamp"].dt.date
+        st.line_chart(logs.groupby("date").size())
+
+        st.subheader(t("search_volume_weekly"))
+        logs["week"] = logs["timestamp"].dt.to_period("W").astype(str)
+        st.line_chart(logs.groupby("week").size())
+
+        st.subheader(t("search_by_hour"))
+        logs["hour"] = logs["timestamp"].dt.hour
+        st.bar_chart(logs.groupby("hour").size())
+
+        st.download_button(t("download_logs"), data=logs.to_csv(index=False).encode("utf-8"), file_name="arama_log.csv")
+    else:
+        st.info("Henüz arama kaydı yok.")
+    st.stop()
 
 # Veri Yükleme
 file_path = "veri.csv"
@@ -129,12 +121,9 @@ except Exception as e:
     st.error(f"Veri yüklenemedi: {e}")
     st.stop()
 
-# Yardımcı fonksiyonlar
+# Fonksiyonlar
 def normalize(text):
-    try:
-        return re.sub(r'[^a-zA-Z0-9]', '', str(text)).lower()
-    except Exception:
-        return ""
+    return re.sub(r'[^a-zA-Z0-9]', '', str(text)).lower()
 
 def is_sequential_match(query, text):
     index = 0
@@ -150,30 +139,29 @@ if "recent" not in st.session_state:
 
 st.markdown("---")
 st.subheader(t("search_title"))
-
 query = st.text_input(t("search_input"), placeholder="Örn: NTH20495")
 
-suggestions = []
+# Tavsiye sistemi
 if query:
-    query_norm = normalize(query)
+    norm_query = normalize(query)
+    suggestions = []
     for col in data.columns:
         suggestions.extend(data[col].dropna().astype(str).tolist())
-    suggestions = [s for s in set(suggestions) if query_norm in normalize(s)][:10]
+    suggestions = [s for s in set(suggestions) if norm_query in normalize(s)][:10]
     if suggestions:
         st.caption("🔁 Öneriler: " + ", ".join(suggestions))
 
+# Arama işlemi
 if query:
     with st.spinner("🔄 Yükleniyor..."):
         time.sleep(0.5)
         norm_query = normalize(query)
-        exact_matches = []
-        partial_matches = []
+        exact_matches, partial_matches = [], []
 
         for _, row in data.iterrows():
             for col in data.columns:
                 cell_value = row[col]
-                if pd.isna(cell_value):
-                    continue
+                if pd.isna(cell_value): continue
                 norm_col = normalize(cell_value)
                 if norm_col == norm_query:
                     exact_matches.append(row)
@@ -184,7 +172,6 @@ if query:
 
         results = exact_matches + partial_matches
 
-        # Arama log kaydı (sessizce)
         with open("arama_log.csv", "a") as log:
             log.write(f"{datetime.now()},{query},{len(results)}\n")
 
@@ -203,9 +190,16 @@ if st.session_state["recent"]:
     st.subheader(t("recent_searches"))
     st.write(", ".join(st.session_state["recent"]))
 
+# Alt görseller hizalanmış şekilde
 st.markdown("---")
-show_hidrolik.image("https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/hidrolik-filtre.jpg", width=600)
-st.image("https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/bauma.png", use_container_width=True)
+with st.container():
+    col1, col2 = st.columns([1, 1])
+    with col1:
+        st.image("https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/hidrolik-filtre.jpg", use_container_width=True)
+    with col2:
+        st.image("https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/bauma.png", use_container_width=True)
+
+# Footer
 st.markdown("""
     <div style='text-align: center; font-size: 0.85em; color: gray;'>
         © 2025 TEMPO FİLTRE | Design by Ozan
