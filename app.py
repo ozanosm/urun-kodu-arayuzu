@@ -1,4 +1,15 @@
 import streamlit as st
+
+def login():
+    st.title("Giriş Yap")
+    username = st.text_input("Kullanıcı adı")
+    password = st.text_input("Şifre", type="password")
+    
+    if username == "admin" and password == "12345":
+        return True
+    else:
+        st.warning("Kullanıcı
+import streamlit as st
 import pandas as pd
 import re
 
