@@ -15,20 +15,19 @@ st.title("🔍 Ürün Kodu Arama Arayüzü")
 
 # Şifreli Giriş
 if "giris" not in st.session_state:
-    with st.expander("🔐 Giriş", expanded=True):
-        username = st.text_input("Kullanıcı Adı")
-        password = st.text_input("Şifre", type="password")
-        if st.button("Giriş Yap"):
-            if username == "tempo" and password == "ozanosmanagaoglu":
-                st.session_state["giris"] = True
-                st.experimental_rerun()
-            else:
-                st.error("Kullanıcı adı veya şifre yanlış.")
-else:
-    st.info("🔓 Giriş başarılı")
-
-if "giris" not in st.session_state:
+    st.title("🔐 Giriş Yap")
+    username = st.text_input("Kullanıcı Adı")
+    password = st.text_input("Şifre", type="password")
+    if st.button("Giriş Yap"):
+        if username == "tempo" and password == "ozanosmanagaoglu":
+            st.session_state["giris"] = True
+            st.experimental_rerun()
+        else:
+            st.error("Kullanıcı adı veya şifre yanlış.")
     st.stop()
+
+# Giriş yapılmışsa bilgi mesajı göster
+st.info("🔓 Giriş başarılı")
 
 # Veri Yükleme (ilk satır başlık değil, ; ile ayrılmış)
 file_path = "veri.csv"
