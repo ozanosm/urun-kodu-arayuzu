@@ -1,14 +1,14 @@
-import pandas as pd
-
-data = pd.read_csv("veri.csv")  # Repo ile aynı klasörde olmalı
 import streamlit as st
+import pandas as pd
+import re
+import os
 
+# --- Şifreli Giriş ---
 def login():
-    st.title("Giriş Yap")
+    st.title("Ürün Kodu Arama Arayüzü - Giriş")
     username = st.text_input("Kullanıcı adı")
     password = st.text_input("Şifre", type="password")
-    
-    if username == "tempo" and password == "ozanosmanagaoglu":
+    if username == "admin" and password == "12345":
         return True
     else:
         st.warning("Kullanıcı adı veya şifre yanlış.")
@@ -17,30 +17,30 @@ def login():
 if not login():
     st.stop()
 
-import streamlit as st
-import pandas as pd
-import re
+# --- Veri Yükleme ---
+file_path = "veri.csv"
+if os.path.exists(file_path):
+    data = pd.read_csv(file_path)
+    st.success("Veri başarıyla yüklendi.")
+    st.write("Veri önizleme:")
+    st.dataframe(data.head())
+else:
+    st.error(f"Dosya bulunamadı: {file_path}")
+    st.stop()
 
-# Sahte veri oluşturma
-data = pd.DataFrame({
-    "Tempo Kod": ["T-UHCAHE", "T-NQNY5A", "T-BB7M2M", "T-0G5BVS", "T-B07CSU"],
-    "Referans Kod 1": ["R1-1UUX5T", "R1-0MDSQN", "R1-U3DWRY", "R1-CQ8QLM", "R1-8NP6P3"],
-    "Referans Kod 2": ["R2-PQ1BUZ", "R2-YJBL3M", "R2-KBARME", "R2-7G2RSR", "R2-B1WKHR"]
-})
-
-# Kodları normalize eden fonksiyon
+# --- Normalize Fonksiyonu ---
 def normalize(text):
     if pd.isna(text):
         return ""
     return re.sub(r'[^a-zA-Z0-9]', '', text).lower()
 
-# Girilen input'un karakterleri sırayla bir metinde olup olmadığını kontrol eden fonksiyon
+# --- Sıralı Karakter Eşleşme Kontrolü ---
 def is_sequential_match(query, text):
     it = iter(text)
     return all(char in it for char in query)
 
+# --- Arama Arayüzü ---
 st.title("Ürün Kodu Arama Arayüzü")
-
 query = st.text_input("Herhangi bir kod girin (Tempo, Referans1, Referans2):")
 
 if query:
@@ -48,10 +48,10 @@ if query:
     results = []
     for _, row in data.iterrows():
         for col in data.columns:
-            norm_col = normalize(row[col])
+            norm_col = normalize(str(row[col]))
             if is_sequential_match(norm_query, norm_col):
                 results.append(row)
-                break  # Satırda eşleşme varsa diğer sütunlara bakmaya gerek yok
+                break
 
     if results:
         st.success(f"{len(results)} eşleşme bulundu.")
@@ -59,4 +59,4 @@ if query:
     else:
         st.warning("Eşleşme bulunamadı.")
 else:
-    st.info("Lütfen bir arama terimi girin.")  
+    st.info("Lütfen bir arama terimi girin.")
