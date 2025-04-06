@@ -30,7 +30,8 @@ def t(key):
     }
     return dictionary.get(key, {}).get(language, key)
 
-# Sidebar içerikleri
+# Sidebar içerikleri (en alt kısımda göster)
+st.sidebar.markdown("---")
 st.sidebar.markdown(t("about_link"))
 st.sidebar.video("https://www.youtube.com/watch?v=I2NFMYQy54k")
 
