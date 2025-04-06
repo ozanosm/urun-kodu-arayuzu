@@ -7,7 +7,7 @@ import os
 st.set_page_config(page_title="Ürün Kodu Arama", layout="wide")
 
 # Görseller (GitHub üzerinden raw linklerle)
-st.image("https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/logo.png", width=300)
+st.image("https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/image.png", width=300)
 st.image("https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/bauma.png", width=700)
 
 # Başlık
