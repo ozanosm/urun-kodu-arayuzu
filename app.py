@@ -62,7 +62,7 @@ if query:
             if norm_col == norm_query:
                 exact_matches.append(row)
                 break
-            elif is_sequential_match(norm_query, norm_col):
+            elif norm_col and is_sequential_match(norm_query, norm_col):
                 partial_matches.append(row)
                 break
 
