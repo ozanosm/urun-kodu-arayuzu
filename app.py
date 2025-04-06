@@ -26,20 +26,12 @@ def t(key):
         "search_found": {"Türkçe": "eşleşme bulundu. Tam eşleşmeler üstte listelenmiştir.", "English": "matches found. Exact matches are listed on top."},
         "search_not_found": {"Türkçe": "Eşleşme bulunamadı.", "English": "No matches found."},
         "search_placeholder": {"Türkçe": "Aramak için bir kod girin.", "English": "Enter a code to search."},
-        "about": {"Türkçe": "ℹ️ Hakkımızda", "English": "ℹ️ About Us"},
         "about_link": {"Türkçe": "[TEMPO FİLTRE Resmî Web Sitesi](https://www.tempofiltre.com)", "English": "[Visit TEMPO FILTER Website](https://www.tempofiltre.com)"},
-        "promo_video": {"Türkçe": "🎬 Tanıtım Filmimiz", "English": "🎬 Our Promo Video"},
-        "search_stats": {"Türkçe": "📊 Arama İstatistikleri", "English": "📊 Search Statistics"},
-        "total_searches": {"Türkçe": "Toplam arama sayısı:", "English": "Total number of searches:"},
-        "exact_match_count": {"Türkçe": "Tam eşleşme:", "English": "Exact matches:"},
-        "partial_match_count": {"Türkçe": "Kısmi eşleşme:", "English": "Partial matches:"},
     }
     return dictionary.get(key, {}).get(language, key)
 
-# Hakkımızda kısmı (yan menüde)
-st.sidebar.markdown(t("about"))
+# Sidebar içerikleri
 st.sidebar.markdown(t("about_link"))
-st.sidebar.markdown(t("promo_video"))
 st.sidebar.video("https://www.youtube.com/watch?v=I2NFMYQy54k")
 
 # Görseller üstte
@@ -92,14 +84,6 @@ def is_sequential_match(query, text):
         index += 1
     return True
 
-# Arama istatistikleri için sayaclar
-if "search_count" not in st.session_state:
-    st.session_state["search_count"] = 0
-if "last_exact" not in st.session_state:
-    st.session_state["last_exact"] = 0
-if "last_partial" not in st.session_state:
-    st.session_state["last_partial"] = 0
-
 # Arama Kutusu
 st.markdown("---")
 st.subheader(t("search_title"))
@@ -125,10 +109,6 @@ if query:
 
     results = exact_matches + partial_matches
 
-    st.session_state["search_count"] += 1
-    st.session_state["last_exact"] = len(exact_matches)
-    st.session_state["last_partial"] = len(partial_matches)
-
     if results:
         st.success(f"{len(results)} {t('search_found')}")
         st.dataframe(pd.DataFrame(results))
@@ -137,12 +117,6 @@ if query:
 else:
     st.info(t("search_placeholder"))
 
-# Arama istatistikleri gösterimi
-st.markdown("---")
-st.subheader(t("search_stats"))
-st.write(f"🔁 {t('total_searches')} {st.session_state['search_count']}")
-st.write(f"✅ {t('exact_match_count')} {st.session_state['last_exact']}")
-st.write(f"🔎 {t('partial_match_count')} {st.session_state['last_partial']}")
-
 # Sayfa altına bauma görseli
+st.markdown("---")
 st.image("https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/bauma.png", use_column_width=True)
