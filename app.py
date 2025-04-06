@@ -8,7 +8,12 @@ def login():
     if username == "admin" and password == "12345":
         return True
     else:
-        st.warning("Kullanıcı
+        st.warning("Kullanıcı adı veya şifre yanlış.")
+        return False
+
+if not login():
+    st.stop()
+
 import streamlit as st
 import pandas as pd
 import re
