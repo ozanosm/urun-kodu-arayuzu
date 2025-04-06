@@ -6,9 +6,9 @@ import os
 # Sayfa yapılandırması
 st.set_page_config(page_title="Ürün Kodu Arama", layout="wide")
 
-# Görseller
-st.image("logo.png", width=300)
-st.image("bauma.png", width=700)
+# Görseller (GitHub üzerinden raw linklerle)
+st.image("https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/logo.png", width=300)
+st.image("https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/bauma.png", width=700)
 
 # Başlık
 st.title("🔍 Ürün Kodu Arama Arayüzü")
