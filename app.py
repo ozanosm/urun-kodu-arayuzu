@@ -6,27 +6,49 @@ import os
 # Sayfa yapılandırması
 st.set_page_config(page_title="Ürün Kodu Arama", layout="wide")
 
-# Görseller (GitHub üzerinden raw linklerle)
+# Dil seçimi
+language = st.sidebar.selectbox("🌐 Dil / Language", ["Türkçe", "English"])
+
+# Çok dilli metin sözlüğü
+def t(key):
+    dictionary = {
+        "title": {"Türkçe": "🔍 Ürün Kodu Arama Arayüzü", "English": "🔍 Product Code Search Interface"},
+        "login_title": {"Türkçe": "🔐 Giriş", "English": "🔐 Login"},
+        "username": {"Türkçe": "Kullanıcı Adı", "English": "Username"},
+        "password": {"Türkçe": "Şifre", "English": "Password"},
+        "login_button": {"Türkçe": "Giriş Yap", "English": "Login"},
+        "login_success": {"Türkçe": "Giriş başarılı. Sayfa yeniden yüklenemeyecek, lütfen sayfayı manuel yenileyin.", "English": "Login successful. Please manually refresh the page."},
+        "login_failed": {"Türkçe": "Kullanıcı adı veya şifre yanlış.", "English": "Incorrect username or password."},
+        "login_ok": {"Türkçe": "🔓 Giriş başarılı", "English": "🔓 Login successful"},
+        "search_title": {"Türkçe": "🔎 Kodla Arama", "English": "🔎 Search by Code"},
+        "search_input": {"Türkçe": "Bir ürün kodu girin (Tempo, Ref1, Ref2):", "English": "Enter a product code (Tempo, Ref1, Ref2):"},
+        "search_found": {"Türkçe": "eşleşme bulundu. Tam eşleşmeler üstte listelenmiştir.", "English": "matches found. Exact matches are listed on top."},
+        "search_not_found": {"Türkçe": "Eşleşme bulunamadı.", "English": "No matches found."},
+        "search_placeholder": {"Türkçe": "Aramak için bir kod girin.", "English": "Enter a code to search."},
+    }
+    return dictionary.get(key, {}).get(language, key)
+
+# Görseller
 st.image("https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/image.png", width=300)
 st.image("https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/bauma.png", width=700)
 
 # Başlık
-st.title("🔍 Ürün Kodu Arama Arayüzü")
+st.title(t("title"))
 
 # Şifreli Giriş
 if "giris" not in st.session_state:
-    with st.expander("🔐 Giriş", expanded=True):
-        username = st.text_input("Kullanıcı Adı")
-        password = st.text_input("Şifre", type="password")
-        if st.button("Giriş Yap"):
+    with st.expander(t("login_title"), expanded=True):
+        username = st.text_input(t("username"))
+        password = st.text_input(t("password"), type="password")
+        if st.button(t("login_button")):
             if username == "tempo" and password == "ozanosmanagaoglu":
                 st.session_state["giris"] = True
-                st.success("Giriş başarılı. Sayfa yeniden yüklenemeyecek, lütfen sayfayı manuel yenileyin.")
+                st.success(t("login_success"))
                 st.stop()
             else:
-                st.error("Kullanıcı adı veya şifre yanlış.")
+                st.error(t("login_failed"))
 else:
-    st.info("🔓 Giriş başarılı")
+    st.info(t("login_ok"))
 
 if "giris" not in st.session_state:
     st.stop()
@@ -59,8 +81,8 @@ def is_sequential_match(query, text):
 
 # Arama Kutusu
 st.markdown("---")
-st.subheader("🔎 Kodla Arama")
-query = st.text_input("Bir ürün kodu girin (Tempo, Ref1, Ref2):")
+st.subheader(t("search_title"))
+query = st.text_input(t("search_input"))
 
 if query:
     norm_query = normalize(query)
@@ -83,9 +105,9 @@ if query:
     results = exact_matches + partial_matches
 
     if results:
-        st.success(f"{len(results)} eşleşme bulundu. Tam eşleşmeler üstte listelenmiştir.")
+        st.success(f"{len(results)} {t('search_found')}")
         st.dataframe(pd.DataFrame(results))
     else:
-        st.warning("Eşleşme bulunamadı.")
+        st.warning(t("search_not_found"))
 else:
-    st.info("Aramak için bir kod girin.")
+    st.info(t("search_placeholder"))
