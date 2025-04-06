@@ -44,17 +44,32 @@ query = st.text_input("Kod girin (Tempo, Ref1, Ref2):")
 
 if query:
     norm_query = normalize(query)
-    results = []
+    exact_match = None
+    partial_matches = []
+
     for _, row in data.iterrows():
         for col in data.columns:
             norm_col = normalize(str(row[col]))
-            if is_sequential_match(norm_query, norm_col):
-                results.append(row)
+
+            # Öncelik: Tam eşleşme
+            if norm_col == norm_query:
+                exact_match = [row]
                 break
 
-    if results:
-        st.success(f"{len(results)} eşleşme bulundu.")
-        st.dataframe(pd.DataFrame(results))
+            # Tam eşleşme yoksa: Sıralı karakter eşleşmesi
+            elif is_sequential_match(norm_query, norm_col):
+                partial_matches.append(row)
+                break
+
+        if exact_match:
+            break  # Tam eşleşme bulunduysa döngüyü sonlandır
+
+    if exact_match:
+        st.success("Tam eşleşme bulundu.")
+        st.dataframe(pd.DataFrame(exact_match))
+    elif partial_matches:
+        st.info(f"{len(partial_matches)} sıralı eşleşme bulundu.")
+        st.dataframe(pd.DataFrame(partial_matches))
     else:
         st.warning("Eşleşme bulunamadı.")
 else:
