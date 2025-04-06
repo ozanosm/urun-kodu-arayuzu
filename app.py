@@ -19,7 +19,7 @@ if "giris" not in st.session_state:
         username = st.text_input("Kullanıcı Adı")
         password = st.text_input("Şifre", type="password")
         if st.button("Giriş Yap"):
-            if username == "admin" and password == "12345":
+            if username == "tempo" and password == "ozanosmanagaoglu":
                 st.session_state["giris"] = True
                 st.success("Giriş başarılı. Sayfa yeniden yüklenemeyecek, lütfen sayfayı manuel yenileyin.")
                 st.stop()
