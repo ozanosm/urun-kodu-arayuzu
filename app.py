@@ -3,6 +3,7 @@ import pandas as pd
 import re
 import os
 import time
+from datetime import datetime
 
 # Sayfa yapılandırması
 st.set_page_config(page_title="Ürün Kodu Arama", layout="wide")
@@ -29,10 +30,16 @@ def t(key):
         "recent_searches": {"Türkçe": "🕘 Son Aramalar", "English": "🕘 Recent Searches"},
         "about_link": {"Türkçe": "[TEMPO FİLTRE Resmî Web Sitesi](https://www.tempofiltre.com)", "English": "[Visit TEMPO FILTER Website](https://www.tempofiltre.com)"},
         "dark_mode": {"Türkçe": "🌗 Koyu Tema", "English": "🌗 Dark Mode"},
+        "analytics": {"Türkçe": "📈 İçgörü ve Raporlama", "English": "📈 Insights and Reporting"},
+        "top_queries": {"Türkçe": "En Çok Aranan Kodlar", "English": "Most Searched Codes"},
+        "search_volume": {"Türkçe": "Arama Hacmi (Günlük)", "English": "Search Volume (Daily)"},
+        "search_volume_weekly": {"Türkçe": "Arama Hacmi (Haftalık)", "English": "Search Volume (Weekly)"},
+        "search_by_hour": {"Türkçe": "Saatlik Arama Dağılımı", "English": "Hourly Search Distribution"},
+        "download_logs": {"Türkçe": "📥 Arama Kayıtlarını İndir", "English": "📥 Download Search Logs"}
     }
     return dictionary.get(key, {}).get(language, key)
 
-# Tema seçimi sidebar en alt
+# Tema seçimi
 if "tema" not in st.session_state:
     st.session_state["tema"] = "light"
 
@@ -59,9 +66,35 @@ st.sidebar.markdown("---")
 st.sidebar.markdown(t("about_link"))
 st.sidebar.video("https://www.youtube.com/watch?v=I2NFMYQy54k")
 
-# Görseller üstte
-st.image("https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/image.png", width=300)
-st.image("https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/hidrolik-filtre.jpg", width=600)
+# 📊 İçgörü ve Raporlama Paneli
+if st.sidebar.button(t("analytics")):
+    st.subheader(t("top_queries"))
+    if os.path.exists("arama_log.csv"):
+        logs = pd.read_csv("arama_log.csv", names=["timestamp", "query", "matches"])
+        logs["timestamp"] = pd.to_datetime(logs["timestamp"])
+
+        top_queries = logs["query"].value_counts().head(10)
+        st.bar_chart(top_queries)
+
+        st.subheader(t("search_volume"))
+        logs["date"] = logs["timestamp"].dt.date
+        volume_daily = logs.groupby("date").size()
+        st.line_chart(volume_daily)
+
+        st.subheader(t("search_volume_weekly"))
+        logs["week"] = logs["timestamp"].dt.to_period("W").astype(str)
+        volume_weekly = logs.groupby("week").size()
+        st.line_chart(volume_weekly)
+
+        st.subheader(t("search_by_hour"))
+        logs["hour"] = logs["timestamp"].dt.hour
+        volume_hour = logs.groupby("hour").size()
+        st.bar_chart(volume_hour)
+
+        st.download_button(t("download_logs"), data=logs.to_csv(index=False).encode("utf-8"), file_name="arama_log.csv")
+    else:
+        st.info("Henüz arama kaydı yok.")
+    st.stop()
 
 # Başlık
 st.title(t("title"))
@@ -80,9 +113,12 @@ if "giris" not in st.session_state:
                 st.experimental_rerun()
             else:
                 st.error(t("login_failed"))
-
-if "giris" not in st.session_state:
+    st.image("https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/image.png", width=300)
+    st.image("https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/bauma.png", use_container_width=True)
     st.stop()
+
+st.image("https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/image.png", width=300)
+show_hidrolik = st.empty()
 
 # Veri Yükleme
 file_path = "veri.csv"
@@ -93,7 +129,7 @@ except Exception as e:
     st.error(f"Veri yüklenemedi: {e}")
     st.stop()
 
-# Normalleştirme
+# Yardımcı fonksiyonlar
 def normalize(text):
     try:
         return re.sub(r'[^a-zA-Z0-9]', '', str(text)).lower()
@@ -109,17 +145,14 @@ def is_sequential_match(query, text):
         index += 1
     return True
 
-# Son 5 arama için
 if "recent" not in st.session_state:
     st.session_state["recent"] = []
 
-# Arama Kutusu
 st.markdown("---")
 st.subheader(t("search_title"))
 
 query = st.text_input(t("search_input"), placeholder="Örn: NTH20495")
 
-# Tavsiye sistemi
 suggestions = []
 if query:
     query_norm = normalize(query)
@@ -151,25 +184,27 @@ if query:
 
         results = exact_matches + partial_matches
 
+        # Arama log kaydı (sessizce)
+        with open("arama_log.csv", "a") as log:
+            log.write(f"{datetime.now()},{query},{len(results)}\n")
+
         if results:
             st.success(f"{len(results)} {t('search_found')}")
             st.dataframe(pd.DataFrame(results))
         else:
             st.warning(t("search_not_found"))
 
-        # Arama kaydet
         st.session_state["recent"] = [query] + [q for q in st.session_state["recent"] if q != query][:4]
 else:
     st.info(t("search_placeholder"))
 
-# Son aramalar
 if st.session_state["recent"]:
     st.markdown("---")
     st.subheader(t("recent_searches"))
     st.write(", ".join(st.session_state["recent"]))
 
-# Alt görsel ve footer
 st.markdown("---")
+show_hidrolik.image("https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/hidrolik-filtre.jpg", width=600)
 st.image("https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/bauma.png", use_container_width=True)
 st.markdown("""
     <div style='text-align: center; font-size: 0.85em; color: gray;'>
