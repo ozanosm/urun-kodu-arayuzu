@@ -59,24 +59,26 @@ query = st.text_input("Bir ürün kodu girin (Tempo, Ref1, Ref2):")
 
 if query:
     norm_query = normalize(query)
-    results = []
+    exact_matches = []
+    partial_matches = []
 
     for _, row in data.iterrows():
-        matched = False
         for col in data.columns:
             cell_value = row[col]
             if pd.isna(cell_value):
                 continue
             norm_col = normalize(cell_value)
-            if is_sequential_match(norm_query, norm_col):
-                matched = True
+            if norm_col == norm_query:
+                exact_matches.append(row)
+                break
+            elif is_sequential_match(norm_query, norm_col):
+                partial_matches.append(row)
                 break
 
-        if matched:
-            results.append(row)
+    results = exact_matches + partial_matches
 
     if results:
-        st.success(f"{len(results)} eşleşme bulundu.")
+        st.success(f"{len(results)} eşleşme bulundu. Tam eşleşmeler üstte listelenmiştir.")
         st.dataframe(pd.DataFrame(results))
     else:
         st.warning("Eşleşme bulunamadı.")
