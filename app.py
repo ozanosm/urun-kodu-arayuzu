@@ -35,8 +35,13 @@ def normalize(text):
     return re.sub(r'[^a-zA-Z0-9]', '', text).lower()
 
 def is_sequential_match(query, text):
-    it = iter(text)
-    return all(char in it for char in query)
+    index = 0
+    for char in query:
+        index = text.find(char, index)
+        if index == -1:
+            return False
+        index += 1
+    return True
 
 # Arama
 st.title("Ürün Kodu Arama")
@@ -54,7 +59,6 @@ if query:
             if norm_col == norm_query:
                 exact_matches.append(row)
                 break
-            # sadece sıralı eşleşme varsa ekle
             elif is_sequential_match(norm_query, norm_col):
                 partial_matches.append(row)
                 break
