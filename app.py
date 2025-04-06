@@ -52,7 +52,8 @@ st.sidebar.video("https://www.youtube.com/watch?v=I2NFMYQy54k")
 
 # Görseller üstte
 st.image("https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/image.png", width=300)
-st.image("/mnt/data/hidrolik-filtre.jpg", use_column_width=True)
+# Bu satırı kaldır ve URL üzerinden yükle:
+st.image("https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/hidrolik-filtre.jpg", use_container_width=True)
 
 # Başlık
 st.title(t("title"))
