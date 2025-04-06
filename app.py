@@ -20,7 +20,6 @@ def t(key):
         "login_button": {"Türkçe": "Giriş Yap", "English": "Login"},
         "login_success": {"Türkçe": "Giriş başarılı. Sayfa yeniden yüklenemeyecek, lütfen sayfayı manuel yenileyin.", "English": "Login successful. Please manually refresh the page."},
         "login_failed": {"Türkçe": "Kullanıcı adı veya şifre yanlış.", "English": "Incorrect username or password."},
-        "login_ok": {"Türkçe": "🔓 Giriş başarılı", "English": "🔓 Login successful"},
         "search_title": {"Türkçe": "🔎 Kodla Arama", "English": "🔎 Search by Code"},
         "search_input": {"Türkçe": "Bir ürün kodu girin (Tempo, Ref1, Ref2):", "English": "Enter a product code (Tempo, Ref1, Ref2):"},
         "search_found": {"Türkçe": "eşleşme bulundu. Tam eşleşmeler üstte listelenmiştir.", "English": "matches found. Exact matches are listed on top."},
@@ -53,11 +52,9 @@ if "giris" not in st.session_state:
             if username == auth_user and password == auth_pass:
                 st.session_state["giris"] = True
                 st.success(t("login_success"))
-                st.stop()
+                st.experimental_rerun()
             else:
                 st.error(t("login_failed"))
-else:
-    st.info(t("login_ok"))
 
 if "giris" not in st.session_state:
     st.stop()
