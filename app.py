@@ -54,6 +54,7 @@ if query:
             if norm_col == norm_query:
                 exact_matches.append(row)
                 break
+            # sadece sıralı eşleşme varsa ekle
             elif is_sequential_match(norm_query, norm_col):
                 partial_matches.append(row)
                 break
