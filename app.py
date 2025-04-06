@@ -41,13 +41,16 @@ st.image("https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/image
 # Başlık
 st.title(t("title"))
 
-# Şifreli Giriş
+# Şifreli Giriş (secrets kullanılarak)
+auth_user = st.secrets["auth"]["username"]
+auth_pass = st.secrets["auth"]["password"]
+
 if "giris" not in st.session_state:
     with st.expander(t("login_title"), expanded=True):
         username = st.text_input(t("username"))
         password = st.text_input(t("password"), type="password")
         if st.button(t("login_button")):
-            if username == "tempo" and password == "ozanosmanagaoglu":
+            if username == auth_user and password == auth_pass:
                 st.session_state["giris"] = True
                 st.success(t("login_success"))
                 st.stop()
