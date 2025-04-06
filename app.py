@@ -84,14 +84,7 @@ if query:
 
     if results:
         st.success(f"{len(results)} eşleşme bulundu. Tam eşleşmeler üstte listelenmiştir.")
-
-        for _, row in pd.DataFrame(results).iterrows():
-            with st.container():
-                st.markdown(f"**Tempo Kod:** `{row['Tempo Kod']}`")
-                st.markdown(f"🔹 **Referans Kod 1:** `{row['Referans Kod 1']}`")
-                st.markdown(f"🔸 **Referans Kod 2:** `{row['Referans Kod 2']}`")
-                st.markdown("---")
-
+        st.dataframe(pd.DataFrame(results))
     else:
         st.warning("Eşleşme bulunamadı.")
 else:
