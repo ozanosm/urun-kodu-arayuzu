@@ -21,8 +21,7 @@ if "giris" not in st.session_state:
         if st.button("Giriş Yap"):
             if username == "tempo" and password == "ozanosmanagaoglu":
                 st.session_state["giris"] = True
-                st.success("Giriş başarılı. Sayfa yeniden yüklenemeyecek, lütfen sayfayı manuel yenileyin.")
-                st.stop()
+                st.experimental_rerun()
             else:
                 st.error("Kullanıcı adı veya şifre yanlış.")
 else:
