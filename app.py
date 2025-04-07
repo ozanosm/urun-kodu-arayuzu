@@ -1,8 +1,8 @@
-# === Paketler ===
 import streamlit as st
 import pandas as pd
 import re
 import os
+import json
 from datetime import datetime
 
 st.set_page_config(page_title="Ürün Kodu Arama", layout="wide")
@@ -24,97 +24,77 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# === Dil Seçimi ve Çeviri Fonksiyonu ===
-st.sidebar.header("⚙️ " + ("Ayarlar" if st.session_state.get("lang", "Türkçe") == "Türkçe" else "Settings"))
+# === Dil Seçimi ===
+st.sidebar.header("⚙️ Ayarlar / Settings")
 language = st.sidebar.radio("🌐 Dil / Language", ["Türkçe", "English"])
 st.session_state["lang"] = language
 
+# === Çoklu Dil JSON dosyasından çeviri alma ===
+try:
+    with open("lang.json", "r", encoding="utf-8") as f:
+        translations = json.load(f)
+except FileNotFoundError:
+    st.error("Çeviri dosyası (lang.json) bulunamadı.")
+    st.stop()
+
 def t(key):
-    dictionary = {
-        "title": {"Türkçe": "🔍 Ürün Kodu Arama Arayüzü", "English": "🔍 Product Code Search Interface"},
-        "username": {"Türkçe": "Kullanıcı Adı", "English": "Username"},
-        "password": {"Türkçe": "Şifre", "English": "Password"},
-        "login_button": {"Türkçe": "Giriş Yap", "English": "Login"},
-        "login_success": {"Türkçe": "Giriş başarılı.", "English": "Login successful."},
-        "login_failed": {"Türkçe": "Kullanıcı adı veya şifre yanlış.", "English": "Incorrect username or password."},
-        "search_input": {"Türkçe": "Bir ürün kodu girin (Tempo, Ref1, Ref2):", "English": "Enter a product code (Tempo, Ref1, Ref2):"},
-        "search_found": {"Türkçe": "eşleşme bulundu.", "English": "matches found."},
-        "search_not_found": {"Türkçe": "Eşleşme bulunamadı.", "English": "No matches found."},
-        "recent_searches": {"Türkçe": "🕘 Son Aramalar", "English": "🕘 Recent Searches"},
-        "dark_mode": {"Türkçe": "🌗 Koyu Tema", "English": "🌗 Dark Mode"},
-        "insights": {"Türkçe": "📈 İçgörü ve Raporlama", "English": "📈 Insights & Reporting"},
-        "download_logs": {"Türkçe": "📥 Arama Kayıtlarını İndir", "English": "📥 Download Search Logs"},
-        "page": {"Türkçe": "🗂️ Sayfa", "English": "🗂️ Page"}
-    }
-    return dictionary.get(key, {}).get(language, key)
+    return translations.get(key, {}).get(language, key)
 
-# === Sayfa Seçimi ===
-page = st.sidebar.radio(t("page"), [
-    "🔍 Arama" if language == "Türkçe" else "🔍 Search",
-    "📊 İçgörü" if language == "Türkçe" else "📊 Insights"
-])
+# === Logo ===
+st.markdown("""
+    <div style='text-align: center;'>
+        <img src='https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/image.png' width='150'>
+    </div>
+""", unsafe_allow_html=True)
 
-# === Web Sitesi ve Video ===
-st.sidebar.markdown(
-    "[🌐 TEMPO FİLTRE Web Sitesi](https://www.tempofiltre.com)" if language == "Türkçe"
-    else "[🌐 TEMPO FILTER Website](https://www.tempofiltre.com)"
-)
-st.sidebar.video("https://www.youtube.com/watch?v=I2NFMYQy54k")
-st.sidebar.markdown("---")
-
-# === Tema Geçişi ===
+# === Tema Seçimi ===
 if "tema" not in st.session_state:
     st.session_state["tema"] = "light"
 if st.sidebar.checkbox(t("dark_mode"), value=(st.session_state["tema"] == "dark")):
     st.session_state["tema"] = "dark"
     st.markdown("""
         <style>
-        body { background-color: #0e1117; color: #fafafa; font-family: 'Segoe UI', sans-serif; transition: background-color 0.4s ease-in-out, color 0.4s ease-in-out; }
+        body, .stApp { background-color: #0e1117 !important; color: #fafafa; }
+        .stTextInput input { background-color: #262730; color: white; }
+        .stButton button { background-color: #444; color: white; border: none; }
         </style>
     """, unsafe_allow_html=True)
 else:
     st.session_state["tema"] = "light"
     st.markdown("""
         <style>
-        body { font-family: 'Segoe UI', sans-serif; transition: background-color 0.4s ease-in-out, color 0.4s ease-in-out; }
+        body, .stApp { background-color: white; color: black; }
         </style>
     """, unsafe_allow_html=True)
 
-# === Başlık ve Logo ===
-title = t("title")
+# === Başlık ===
 st.markdown(f"""
-    <div style='display: flex; align-items: center; justify-content: flex-start; gap: 1rem;'>
-        <img src='https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/image.png' width='80' style='margin-top: -5px;'>
-        <h1 style='margin-bottom: 0;'>{title}</h1>
-    </div>
+    <h1 style='text-align: center;'>{t("title")}</h1>
     <hr style='margin-top: 0.5rem; margin-bottom: 1rem;'>
 """, unsafe_allow_html=True)
 
-# === Giriş Sistemi ===
-auth_user = st.secrets["auth"]["username"]
-auth_pass = st.secrets["auth"]["password"]
+# === Giriş Kontrolü ===
 if "giris" not in st.session_state:
     username = st.text_input(t("username"))
     password = st.text_input(t("password"), type="password")
     if st.button(t("login_button")):
-        if username == auth_user and password == auth_pass:
+        if username == "tempo" and password == "ozanosmanagaoglu":
             st.session_state["giris"] = True
-            st.success(t("login_success"))
             st.rerun()
         else:
             st.error(t("login_failed"))
-    st.image("https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/bauma.png", use_container_width=True)
     st.stop()
 
 # === Veri Yükleme ===
 file_path = "veri.csv"
 try:
     data = pd.read_csv(file_path, on_bad_lines='skip', header=None, delimiter=';')
-    data.columns = ["Tempo Kod", "Referans Kod 1", "Referans Kod 2"]
+    data.columns = [t("tempo_code"), t("ref1_code"), t("ref2_code")]
 except Exception as e:
     st.error(f"Veri yüklenemedi: {e}")
     st.stop()
 
+# === Fonksiyonlar ===
 def normalize(text):
     return re.sub(r'[^a-zA-Z0-9]', '', str(text)).lower()
 
@@ -127,48 +107,15 @@ def is_sequential_match(query, text):
         index += 1
     return True
 
-if "recent" not in st.session_state:
-    st.session_state["recent"] = []
-
-# === İçgörü ===
-if page == ("📊 İçgörü" if language == "Türkçe" else "📊 Insights"):
-    st.subheader("📊 Arama Verileri")
-    if os.path.exists("arama_log.csv"):
-        df = pd.read_csv("arama_log.csv", names=["Tarih", "Kod", "Sonuç"])
-        df["Tarih"] = pd.to_datetime(df["Tarih"])
-        df["Gün"] = df["Tarih"].dt.date
-        top_codes = df["Kod"].value_counts().head(10)
-        daily = df.groupby("Gün").size()
-
-        st.write("🔝 En Çok Aranan Kodlar")
-        st.bar_chart(top_codes)
-
-        st.write("📅 Günlük Arama Hacmi")
-        st.line_chart(daily)
-
-        st.download_button(t("download_logs"), df.to_csv(index=False).encode("utf-8"), file_name="arama_log.csv")
-    else:
-        st.info("Henüz arama kaydı bulunamadı.")
-    st.stop()
-
-# === Arama Alanı ===
-placeholder_text = "Örn: NTH20495" if language == "Türkçe" else "e.g. NTH20495"
-query = st.text_input(t("search_input"), placeholder=placeholder_text)
-
+# === Arama Kutusu ===
+query = st.text_input(t("search_input"), placeholder="NTH20495")
 if not query:
     st.info(t("search_input"))
 
-# === Öneri Sistemi ve Arama ===
 if query:
     norm_query = normalize(query)
-    suggestions = []
-    for col in data.columns:
-        suggestions.extend(data[col].dropna().astype(str).tolist())
-    suggestions = [s for s in set(suggestions) if norm_query in normalize(s)][:10]
-    if suggestions:
-        st.caption("🔁 Öneriler: " + ", ".join(suggestions))
-
     exact_matches, partial_matches = [], []
+
     for _, row in data.iterrows():
         for col in data.columns:
             cell_value = row[col]
@@ -190,13 +137,6 @@ if query:
         st.dataframe(pd.DataFrame(results))
     else:
         st.warning(t("search_not_found"))
-
-    st.session_state["recent"] = [query] + [q for q in st.session_state["recent"] if q != query][:4]
-
-if st.session_state["recent"]:
-    st.markdown("---")
-    st.subheader(t("recent_searches"))
-    st.write(", ".join(st.session_state["recent"]))
 
 # === Alt Görsel ve Footer ===
 st.image("https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/bauma.png", use_container_width=True)
