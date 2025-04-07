@@ -4,6 +4,7 @@ import re
 import os
 import time
 from datetime import datetime
+import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="Ürün Kodu Arama", layout="wide")
 
@@ -11,8 +12,8 @@ st.set_page_config(page_title="Ürün Kodu Arama", layout="wide")
 st.markdown("""
     <style>
     section.main > div { padding-top: 10px; padding-bottom: 10px; }
-    .block-container { padding-top: 1rem; padding-bottom: 0.5rem; }
-    h1 { font-size: 1.8rem; margin-bottom: 0.5rem; }
+    .block-container { padding-top: 1rem; padding-bottom: 0.5rem; transition: all 0.3s ease-in-out; }
+    h1 { font-size: 1.8rem; margin-bottom: 0.5rem; transition: all 0.3s ease-in-out; }
     .stTextInput > div > div > input { height: 3rem; font-size: 1.1rem; }
     .stButton button { padding: 0.5rem 1.5rem; font-size: 1rem; }
     </style>
@@ -29,6 +30,7 @@ st.markdown("""
 
 # === Sidebar Ayarları ===
 st.sidebar.header("⚙️ Ayarlar")
+page = st.sidebar.radio("🗂️ Sayfa", ["🔍 Arama", "📊 İçgörü"])
 language = st.sidebar.radio("🌐 Dil / Language", ["Türkçe", "English"])
 st.session_state["lang"] = language
 
@@ -44,9 +46,15 @@ def t(key):
         "search_found": {"Türkçe": "eşleşme bulundu.", "English": "matches found."},
         "search_not_found": {"Türkçe": "Eşleşme bulunamadı.", "English": "No matches found."},
         "recent_searches": {"Türkçe": "🕘 Son Aramalar", "English": "🕘 Recent Searches"},
-        "dark_mode": {"Türkçe": "🌗 Koyu Tema", "English": "🌗 Dark Mode"}
+        "dark_mode": {"Türkçe": "🌗 Koyu Tema", "English": "🌗 Dark Mode"},
+        "insights": {"Türkçe": "📈 İçgörü ve Raporlama", "English": "📈 Insights & Reporting"},
+        "download_logs": {"Türkçe": "📥 Arama Kayıtlarını İndir", "English": "📥 Download Search Logs"}
     }
     return dictionary.get(key, {}).get(language, key)
+
+# Sidebar: video ve web sitesi
+st.sidebar.markdown("[🌐 TEMPO FİLTRE Web Sitesi](https://www.tempofiltre.com)")
+st.sidebar.video("https://www.youtube.com/watch?v=I2NFMYQy54k")
 
 st.sidebar.markdown("---")
 if "tema" not in st.session_state:
@@ -55,14 +63,14 @@ if st.sidebar.checkbox(t("dark_mode"), value=(st.session_state["tema"] == "dark"
     st.session_state["tema"] = "dark"
     st.markdown("""
         <style>
-        body { background-color: #0e1117; color: #fafafa; font-family: 'Segoe UI', sans-serif; }
+        body { background-color: #0e1117; color: #fafafa; font-family: 'Segoe UI', sans-serif; transition: all 0.3s ease-in-out; }
         </style>
     """, unsafe_allow_html=True)
 else:
     st.session_state["tema"] = "light"
     st.markdown("""
         <style>
-        body { font-family: 'Segoe UI', sans-serif; }
+        body { font-family: 'Segoe UI', sans-serif; transition: all 0.3s ease-in-out; }
         </style>
     """, unsafe_allow_html=True)
 
@@ -81,6 +89,27 @@ if "giris" not in st.session_state:
         else:
             st.error(t("login_failed"))
     st.image("https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/bauma.png", use_container_width=True)
+    st.stop()
+
+# === İçgörü ve Raporlama ===
+if page == "📊 İçgörü":
+    st.subheader("📊 Arama Verileri")
+    if os.path.exists("arama_log.csv"):
+        df = pd.read_csv("arama_log.csv", names=["Tarih", "Kod", "Sonuç"])
+        df["Tarih"] = pd.to_datetime(df["Tarih"])
+        df["Gün"] = df["Tarih"].dt.date
+        top_codes = df["Kod"].value_counts().head(10)
+        daily = df.groupby("Gün").size()
+
+        st.write("🔝 En Çok Aranan Kodlar")
+        st.bar_chart(top_codes)
+
+        st.write("📅 Günlük Arama Hacmi")
+        st.line_chart(daily)
+
+        st.download_button(t("download_logs"), df.to_csv(index=False).encode("utf-8"), file_name="arama_log.csv")
+    else:
+        st.info("Henüz arama kaydı bulunamadı.")
     st.stop()
 
 # === Veri Yükleme ===
@@ -110,6 +139,16 @@ if "recent" not in st.session_state:
 
 # === Arama Kutusu ===
 query = st.text_input(t("search_input"), placeholder="Örn: NTH20495")
+
+# === Öneri Sistemi ===
+if query:
+    norm_query = normalize(query)
+    suggestions = []
+    for col in data.columns:
+        suggestions.extend(data[col].dropna().astype(str).tolist())
+    suggestions = [s for s in set(suggestions) if norm_query in normalize(s)][:10]
+    if suggestions:
+        st.caption("🔁 Öneriler: " + ", ".join(suggestions))
 
 # === Arama Motoru ===
 if query:
