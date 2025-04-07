@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import re
 import os
-import time
 from datetime import datetime
 
 st.set_page_config(page_title="Ürün Kodu Arama", layout="wide")
@@ -11,25 +10,21 @@ st.set_page_config(page_title="Ürün Kodu Arama", layout="wide")
 st.markdown("""
     <style>
     section.main > div { padding-top: 10px; padding-bottom: 10px; }
-    .block-container { padding-top: 1rem; padding-bottom: 0.5rem; transition: all 0.3s ease-in-out; }
-    h1 { font-size: 1.8rem; margin-bottom: 0.5rem; transition: all 0.3s ease-in-out; }
+    .block-container { padding-top: 1rem; padding-bottom: 0.5rem; transition: all 0.4s ease-in-out; }
+    h1 { font-size: 1.8rem; margin-bottom: 0.5rem; transition: all 0.4s ease-in-out; opacity: 0; animation: fadeIn 1s ease-in-out forwards; }
     .stTextInput > div > div > input { height: 3rem; font-size: 1.1rem; }
     .stButton button { padding: 0.5rem 1.5rem; font-size: 1rem; }
+    img { transition: transform 0.3s ease-in-out; }
+    img:hover { transform: scale(1.03); }
+    @keyframes fadeIn {
+        0% { opacity: 0; transform: translateY(10px); }
+        100% { opacity: 1; transform: translateY(0); }
+    }
     </style>
-""", unsafe_allow_html=True)
-
-# === Logo ve Başlık ===
-st.markdown("""
-    <div style='display: flex; align-items: center; gap: 1rem;'>
-        <img src='https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/image.png' width='160'>
-        <h1 style='margin: 0;'>🔍 Ürün Kodu Arama Arayüzü</h1>
-    </div>
-    <hr style='margin-top: 0.5rem; margin-bottom: 1rem;'>
 """, unsafe_allow_html=True)
 
 # === Sidebar Ayarları ===
 st.sidebar.header("⚙️ Ayarlar")
-page = st.sidebar.radio("🗂️ Sayfa", ["🔍 Arama", "📊 İçgörü"])
 language = st.sidebar.radio("🌐 Dil / Language", ["Türkçe", "English"])
 st.session_state["lang"] = language
 
@@ -47,31 +42,42 @@ def t(key):
         "recent_searches": {"Türkçe": "🕘 Son Aramalar", "English": "🕘 Recent Searches"},
         "dark_mode": {"Türkçe": "🌗 Koyu Tema", "English": "🌗 Dark Mode"},
         "insights": {"Türkçe": "📈 İçgörü ve Raporlama", "English": "📈 Insights & Reporting"},
-        "download_logs": {"Türkçe": "📥 Arama Kayıtlarını İndir", "English": "📥 Download Search Logs"}
+        "download_logs": {"Türkçe": "📥 Arama Kayıtlarını İndir", "English": "📥 Download Search Logs"},
+        "page": {"Türkçe": "🗂️ Sayfa", "English": "🗂️ Page"}
     }
     return dictionary.get(key, {}).get(language, key)
 
-# Sidebar: video ve web sitesi
+page = st.sidebar.radio(t("page"), ["🔍 Arama", "📊 İçgörü"])
+
 st.sidebar.markdown("[🌐 TEMPO FİLTRE Web Sitesi](https://www.tempofiltre.com)")
 st.sidebar.video("https://www.youtube.com/watch?v=I2NFMYQy54k")
-
 st.sidebar.markdown("---")
+
 if "tema" not in st.session_state:
     st.session_state["tema"] = "light"
 if st.sidebar.checkbox(t("dark_mode"), value=(st.session_state["tema"] == "dark")):
     st.session_state["tema"] = "dark"
     st.markdown("""
         <style>
-        body { background-color: #0e1117; color: #fafafa; font-family: 'Segoe UI', sans-serif; transition: all 0.3s ease-in-out; }
+        body { background-color: #0e1117; color: #fafafa; font-family: 'Segoe UI', sans-serif; transition: background-color 0.4s ease-in-out, color 0.4s ease-in-out; }
         </style>
     """, unsafe_allow_html=True)
 else:
     st.session_state["tema"] = "light"
     st.markdown("""
         <style>
-        body { font-family: 'Segoe UI', sans-serif; transition: all 0.3s ease-in-out; }
+        body { font-family: 'Segoe UI', sans-serif; transition: background-color 0.4s ease-in-out, color 0.4s ease-in-out; }
         </style>
     """, unsafe_allow_html=True)
+
+# === Logo ve Başlık ===
+st.markdown("""
+    <div style='text-align: center;'>
+        <img src='https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/image.png' width='200'>
+        <h1 style='margin-top: 0.2em;'>🔍 Ürün Kodu Arama Arayüzü</h1>
+    </div>
+    <hr style='margin-top: 0.5rem; margin-bottom: 1rem;'>
+""", unsafe_allow_html=True)
 
 # === Şifreli Giriş ===
 auth_user = st.secrets["auth"]["username"]
@@ -84,13 +90,37 @@ if "giris" not in st.session_state:
         if username == auth_user and password == auth_pass:
             st.session_state["giris"] = True
             st.success(t("login_success"))
-            st.stop()
+            st.rerun()
         else:
             st.error(t("login_failed"))
     st.image("https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/bauma.png", use_container_width=True)
     st.stop()
 
-# === İçgörü ve Raporlama ===
+# === Veri Yükleme ===
+file_path = "veri.csv"
+try:
+    data = pd.read_csv(file_path, on_bad_lines='skip', header=None, delimiter=';')
+    data.columns = ["Tempo Kod", "Referans Kod 1", "Referans Kod 2"]
+except Exception as e:
+    st.error(f"Veri yüklenemedi: {e}")
+    st.stop()
+
+def normalize(text):
+    return re.sub(r'[^a-zA-Z0-9]', '', str(text)).lower()
+
+def is_sequential_match(query, text):
+    index = 0
+    for char in query:
+        index = text.find(char, index)
+        if index == -1:
+            return False
+        index += 1
+    return True
+
+if "recent" not in st.session_state:
+    st.session_state["recent"] = []
+
+# === İçgörü Sayfası ===
 if page == "📊 İçgörü":
     st.subheader("📊 Arama Verileri")
     if os.path.exists("arama_log.csv"):
@@ -110,31 +140,6 @@ if page == "📊 İçgörü":
     else:
         st.info("Henüz arama kaydı bulunamadı.")
     st.stop()
-
-# === Veri Yükleme ===
-file_path = "veri.csv"
-try:
-    data = pd.read_csv(file_path, on_bad_lines='skip', header=None, delimiter=';')
-    data.columns = ["Tempo Kod", "Referans Kod 1", "Referans Kod 2"]
-except Exception as e:
-    st.error(f"Veri yüklenemedi: {e}")
-    st.stop()
-
-# === Fonksiyonlar ===
-def normalize(text):
-    return re.sub(r'[^a-zA-Z0-9]', '', str(text)).lower()
-
-def is_sequential_match(query, text):
-    index = 0
-    for char in query:
-        index = text.find(char, index)
-        if index == -1:
-            return False
-        index += 1
-    return True
-
-if "recent" not in st.session_state:
-    st.session_state["recent"] = []
 
 # === Arama Kutusu ===
 query = st.text_input(t("search_input"), placeholder="Örn: NTH20495")
@@ -186,10 +191,10 @@ if st.session_state["recent"]:
     st.subheader(t("recent_searches"))
     st.write(", ".join(st.session_state["recent"]))
 
-# === Alt Görsel ===
+# === Alt Görsel ve Footer ===
 st.image("https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/bauma.png", use_container_width=True)
-st.markdown("""
+st.markdown(\"\"\"
     <div style='text-align: center; font-size: 0.85em; color: gray;'>
         © 2025 TEMPO FİLTRE | Design by Ozan
     </div>
-""", unsafe_allow_html=True)
+\"\"\", unsafe_allow_html=True)
