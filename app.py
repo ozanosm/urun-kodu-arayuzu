@@ -193,8 +193,8 @@ if st.session_state["recent"]:
 
 # === Alt Görsel ve Footer ===
 st.image("https://raw.githubusercontent.com/ozanosm/urun-kodu-arayuzu/main/bauma.png", use_container_width=True)
-st.markdown(\"\"\"
+st.markdown("""
     <div style='text-align: center; font-size: 0.85em; color: gray;'>
-        © 2025 TEMPO FİLTRE | Design by Ozan
+        © 2025 TEMPO FİLTRE | Design by osm
     </div>
-\"\"\", unsafe_allow_html=True)
+""", unsafe_allow_html=True)
