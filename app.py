@@ -4,7 +4,6 @@ import re
 import os
 import time
 from datetime import datetime
-import matplotlib.pyplot as plt
 
 st.set_page_config(page_title="Ürün Kodu Arama", layout="wide")
 
