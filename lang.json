@@ -1,0 +1,82 @@
+{
+  "title": {
+    "Türkçe": "🔍 Ürün Kodu Arama Arayüzü",
+    "English": "🔍 Product Code Search Interface"
+  },
+  "username": {
+    "Türkçe": "Kullanıcı Adı",
+    "English": "Username"
+  },
+  "password": {
+    "Türkçe": "Şifre",
+    "English": "Password"
+  },
+  "login_button": {
+    "Türkçe": "Giriş Yap",
+    "English": "Login"
+  },
+  "login_success": {
+    "Türkçe": "Giriş başarılı.",
+    "English": "Login successful."
+  },
+  "login_failed": {
+    "Türkçe": "Kullanıcı adı veya şifre yanlış.",
+    "English": "Incorrect username or password."
+  },
+  "search_input": {
+    "Türkçe": "Bir ürün kodu girin (Tempo, Ref1, Ref2):",
+    "English": "Enter a product code (Tempo, Ref1, Ref2):"
+  },
+  "search_found": {
+    "Türkçe": "eşleşme bulundu.",
+    "English": "matches found."
+  },
+  "search_not_found": {
+    "Türkçe": "Eşleşme bulunamadı.",
+    "English": "No matches found."
+  },
+  "recent_searches": {
+    "Türkçe": "🕘 Son Aramalar",
+    "English": "🕘 Recent Searches"
+  },
+  "dark_mode": {
+    "Türkçe": "🌗 Koyu Tema",
+    "English": "🌗 Dark Mode"
+  },
+  "insights": {
+    "Türkçe": "📈 İçgörü ve Raporlama",
+    "English": "📈 Insights & Reporting"
+  },
+  "download_logs": {
+    "Türkçe": "📥 Arama Kayıtlarını İndir",
+    "English": "📥 Download Search Logs"
+  },
+  "page": {
+    "Türkçe": "🗂️ Sayfa",
+    "English": "🗂️ Page"
+  },
+  "tempo_code": {
+    "Türkçe": "Tempo Kod",
+    "English": "Tempo Code"
+  },
+  "ref1_code": {
+    "Türkçe": "Referans Kod 1",
+    "English": "Reference Code 1"
+  },
+  "ref2_code": {
+    "Türkçe": "Referans Kod 2",
+    "English": "Reference Code 2"
+  },
+  "search_data": {
+    "Türkçe": "📊 Arama Verileri",
+    "English": "📊 Search Data"
+  },
+  "top_codes": {
+    "Türkçe": "🔝 En Çok Aranan Kodlar",
+    "English": "🔝 Most Searched Codes"
+  },
+  "daily_volume": {
+    "Türkçe": "📅 Günlük Arama Hacmi",
+    "English": "📅 Daily Search Volume"
+  }
+}
